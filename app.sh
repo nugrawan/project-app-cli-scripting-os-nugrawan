@@ -14,6 +14,31 @@ BOLD='\e[1m'
 UNDERLINE='\e[4m'
 RESET='\e[0m'  # Mengembalikan ke normal
 
+# menggunakan asosiative array saran dari gpt
+declare -A costumers_data
+
+# Fungsi menampilkan pelanggan
+display_costumers(){
+  if [ ${#costumers_data[@]} -gt 0 ]; then
+        counter=1
+        echo ""
+        echo -e "${BOLD}${YELLOW}=== Daftar Hutang ===${RESET} "
+        for name in "${!costumers_data[@]}"; do
+            echo "${counter}. $name: Rp ${costumers_data[$name]}"
+            (( counter++ ))
+        done
+        echo " "
+        read -p "Tekan ENTER untuk kembali ke menu..."
+    else
+        echo -e "${RED}Belum ada pelanggan yang ditambahkan."
+        echo " "
+    fi
+}
+
+#add_costumers(){}
+
+#pay_debt(){}
+
 while true; do
     echo -e "${MAGENTA}=================================="
     echo -e "${BOLD}${CYAN}  Aplikasi Managemen Hutang Toko ${RESET} "
@@ -25,8 +50,8 @@ while true; do
     read -p "Pilih opsi [1-4]: " choice
 
     case $choice in
-        1) display_consumer ;;
-        2) add_debt ;;
+        1) display_costumers ;;
+        2) add_costumers ;;
         3) pay_debt ;;
         4)
             echo -e "${GREEN}Berhasil keluar dari aplikasi!"
