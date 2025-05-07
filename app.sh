@@ -35,7 +35,23 @@ display_costumers(){
     fi
 }
 
-#add_costumers(){}
+add_costumers(){
+  read -p "Nama pelanggan: " name
+  read -p "Hutang: " debt
+
+  if [[ -v costumers_data["$name"] ]]; then
+        # Update nilai hutang (penjumlahan dengan yang sudah ada)
+        costumers_data["$name"]=$((costumers_data["$name"] + debt))
+        echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt, total: Rp.${costumers_data[$name]}"
+        echo " "
+  else
+        # Jika belum ada, tambahkan pelanggan baru
+        costumers_data["$name"]="$debt"
+        echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt"
+        echo ""
+  fi
+  
+}
 
 #pay_debt(){}
 
