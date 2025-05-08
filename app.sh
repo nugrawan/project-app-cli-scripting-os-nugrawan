@@ -14,47 +14,79 @@ BOLD='\e[1m'
 UNDERLINE='\e[4m'
 RESET='\e[0m'  # Mengembalikan ke normal
 
-# menggunakan asosiative array saran dari gpt
+# menggunakan asosiative array
 declare -A costumers_data
 
 # Fungsi menampilkan pelanggan
 display_costumers(){
-  if [ ${#costumers_data[@]} -gt 0 ]; then
+    # Cek apakah ada pelanggan
+    if [ ${#costumers_data[@]} -gt 0 ]; then
         counter=1
-        echo ""
         echo -e "${BOLD}${YELLOW}=== Daftar Hutang ===${RESET} "
         for name in "${!costumers_data[@]}"; do
             echo "${counter}. $name: Rp ${costumers_data[$name]}"
             (( counter++ ))
         done
-        echo " "
-        read -p "Tekan ENTER untuk kembali ke menu..."
+        echo ""
+    # Jika belum ada pelanggan
     else
         echo -e "${RED}Belum ada pelanggan yang ditambahkan."
-        echo " "
     fi
 }
 
+# Fungsi menambahkan pelanggan
 add_costumers(){
-  read -p "Nama pelanggan: " name
-  read -p "Hutang: " debt
+    read -p "Nama pelanggan: " name
+    read -p "Hutang: " debt
+    maksDebt=1000000
 
-  if [[ -v costumers_data["$name"] ]]; then
-        # Update nilai hutang (penjumlahan dengan yang sudah ada)
-        costumers_data["$name"]=$((costumers_data["$name"] + debt))
-        echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt, total: Rp.${costumers_data[$name]}"
-        echo " "
-  else
-        # Jika belum ada, tambahkan pelanggan baru
-        costumers_data["$name"]="$debt"
-        echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt"
-        echo ""
-  fi
-  
+    # Cek jumlah input hutang maksimal 1 juta
+    if [[ $debt -le $maksDebt ]]; then
+        # Cek apakah nama pelanggan sudah ada
+        if [[ -v costumers_data["$name"] ]]; then
+            # Cek apakah hutang sudah mencapai maksimal
+            if [[ $((${costumers_data["$name"]} + debt)) -le $maksDebt ]]; then
+                costumers_data["$name"]=$((costumers_data["$name"] + debt))
+                echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt, total: Rp.${costumers_data[$name]}${RESET}"
+            else
+                echo -e "${RED}Hutang ${name} sudah di batas maksimum${RESET}"
+            fi
+        else
+            # Jika belum ada, tambahkan pelanggan baru dan jumlah hutangnya
+            costumers_data["$name"]="$debt"
+            echo -e "${GREEN}Hutang $name ditambahkan sebesar Rp.$debt"
+        fi
+    else
+        echo -e "${RED}Maksimal hutang adalah Rp.1000000(1 Juta rupiah)"
+    fi
 }
 
-#pay_debt(){}
+# Fungsi pembayaran hutang
+pay_debt(){
+    read -p "Masukkan nama pelanggan: " name
 
+    # Cek apakah nama pelanggan ada di daftar
+    if [[ -v costumers_data["$name"] ]]; then
+        echo -e "=>Total hutang ${name} sebesar ${YELLOW}Rp.${costumers_data[$name]}${WHITE}"
+        read -p "Masukkan nominal yang ingin dibayar: " payDebt
+        echo -e "${YELLOW}Pastikan uang yang di terima sudah sesuai yang diinput, tekan ENTER jika sudah yakin!" 
+        read
+
+        # Cek apakah nominal yang akan di bayar >= Rp.1000
+        if [[ $payDebt -gt 999 ]]; then
+            # Jumlah hutang yang tersimpan di kurangi jumlah yang dibayar
+            costumers_data["$name"]=$((costumers_data["$name"] - payDebt))
+
+            echo -e "${GREEN}Hutang ${name} berhasil dibayar sebesar Rp.${payDebt}, sisa Rp.${costumers_data[$name]}${WHITE}"
+        else
+            echo -e "${RED}Pembayaran terlalu sedikit, minimal Rp.1000"
+        fi
+    else
+        echo "${name} belum punya hutang"
+    fi
+}
+
+# Program utama
 while true; do
     echo -e "${MAGENTA}=================================="
     echo -e "${BOLD}${CYAN}  Aplikasi Managemen Hutang Toko ${RESET} "
